@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use Illuminate\Support\Facades\Http;
+
 use App\Models\Incomes;
 use App\Models\Stocks;
 use App\Models\Orders;
@@ -17,7 +19,7 @@ class WildberriesHelper
     /**
      * @var string ссылка для GET запросов
      */
-    public string $url = 'https://suppliers-stats.wildberries.ru/api/v1/supplier/';
+    private static string $url = 'https://suppliers-stats.wildberries.ru/api/v1/supplier/';
 
     /**
      * @var string API-ключ для аутентификации
@@ -90,15 +92,17 @@ class WildberriesHelper
             'dateFrom' => $this->dateFrom
         ];
 
+        // установка конечной даты / по умолчанию
         (isset($otherProps['dateTo']))
             ? $this->dateTo = $otherProps['dateTo']
             : $this->dateTo = date('Y-m-d');
 
-
+        // установка флажка / по умолчанию
         (isset($otherProps['flag']))
             ? $this->flag = $otherProps['flag']
             : $this->flag = 0;
 
+        // установка лимита / по умолчанию
         if (isset($otherProps['limit'])) {
             if ($otherProps['limit'] <= 100_000) {
                 $this->limit = $otherProps['limit'];
@@ -111,70 +115,127 @@ class WildberriesHelper
             $this->limit = 1_000;
         }
 
+        // установка параметра rrdid / по умолчанию
         (isset($otherProps['rrdid']))
             ? $this->rrdid = $otherProps['rrdid']
             : $this->rrdid = 0;
     }
 
     /**
-     * Проверка ввода данных с консоли и сбор дополнительных параметров
+     * Получение необходимых аргументов и параметров из консольной команды
      *
-     * @param array $props Аргументы
-     * @param array $option Параметры
-     * @return array Массив дополнительных параметров
+     * @param array $arguments Аргументы
+     * @param array $options Параметры
+     * @return array Массив необходимых аргументов и параметров
      */
-    public static function checkInput(array $props, array $options): array
+    public static function input(array $arguments, array $options): array
     {
-        if (!strlen($props['key']) && strlen($props['key']) !== 48) {
-            die('Ключ пустой или некорректен');
+        $props = [];
+
+        // проверка ключа на пустоту и полноту
+        if (self::checkKey($arguments['key'])) {
+            $props['key'] = $arguments['key'];
         }
 
-        $pattern_date = '/^\d{4}-(0\d|1[1-2])-(0\d|[1-2]\d|3[0-1])$/';
-        self::checkPropsOrOptions($props, 'dateFrom', $pattern_date);
-        $otherProps['dateTo'] = self::checkPropsOrOptions($options, 'dateTo', $pattern_date);
-        $otherProps['flag'] = self::checkPropsOrOptions($options, 'flag', '/^[0-1]$/');
-        $otherProps['limit'] = self::checkPropsOrOptions($options, 'limit', '/^\d+$/');
-        $otherProps['rrdid'] = self::checkPropsOrOptions($options, 'rrdid', '/^[0-1]$/');
+        // проверка начальной и конечной дат на корректность
+        $pattern =
+            '/^'
+            . '(\d{4}-(0\d|1[1-2])-(0\d|[1-2]\d|3[0-1]))'
+            . '(T([0-1]\d|2[0-3]):([0-5]\d):([0-5]\d)){0,1}'
+            . '(Z){0,1}'
+            . '(\.\d{5}){0,1}'
+            . '(Z){0,1}'
+            . '$/';
+        if (self::checkProp('dateFrom', $arguments['dateFrom'], $pattern)) {
+            $props['dateFrom'] = $arguments['dateFrom'];
+        }
 
-        return $otherProps;
+        $props['dateTo'] = self::getOption('dateTo', $options, $pattern);
+
+        // проверка флажка на корректность
+        $props['flag'] = self::getOption('flag', $options, $pattern);
+
+        // проверка установленного лимита на корректность
+        $props['limit'] = self::getOption('limit', $options, $pattern);
+
+        // проверка параметра rrdid на корректность
+        $props['rrdid'] = self::getOption('rrdid', $options, $pattern);
+
+        return $props;
     }
 
     /**
-     * Проверка аргументов и параметров
+     * Получение параметра
      *
-     * @param array $poo Аргумент или параметр который нуждается в проверке
-     * @param string $key Ключ
-     * @param string $pattern Паттерн проверки
-     * @return mixed|void
+     * @param string $option_name Название параметра
+     * @param array $options Массив параметров
+     * @param string $pattern Паттерн для проверки
+     * @return mixed|void|null
      */
-    private static function checkPropsOrOptions(array $poo, string $key, string $pattern)
+    private static function getOption(string $option_name, array $options, string $pattern)
     {
-        if (isset($poo[$key])) {
-            if (!preg_match(
-                $pattern,
-                $poo[$key])) {
-                die ('Формат ' . $key . ' не верен');
+        $option = $options[$option_name];
+        if (isset($option)) {
+            if (self::checkProp($option_name, $option, $pattern)) {
+                return $option;
             }
+        } else {
+            return null;
+        }
+    }
 
-            return $poo[$key];
-        } else return null;
+    /**
+     * Проверка ключа
+     *
+     * @param string $key Ключ
+     * @return bool True в случае успешной проверки
+     */
+    private static function checkKey(string $key): bool
+    {
+        if (!strlen($key) && strlen($key) !== 48) {
+            die('Ключ пустой или некорректен' . PHP_EOL);
+        }
+
+        return true;
+    }
+
+    /**
+     * Проверка аргумента/параметров
+     *
+     * @param string $name Название аргумента/параметра, который нуждается в проверке
+     * @param string|integer $prop Аргумент/параметр, который нуждается в проверке
+     * @param string $pattern Паттерн для проверки
+     * @return bool True в случае успешной проверки
+     */
+    private static function checkProp(string $name, $prop, string $pattern): bool
+    {
+
+        if (!preg_match(
+            $pattern,
+            $prop
+        )) {
+            die ('Формат ' . $name . ' не верен' . PHP_EOL);
+        }
+
+        return true;
     }
 
     /**
      * Получение данных через RESTful API
      *
      * @param string $method Медод API
-     * @return array|null Массив запрошенных данных
+     * @return array|null Json запрошенных по методу данных
      */
     public function get(string $method): ?array
     {
         $allowed_methods = ['incomes', 'stocks', 'orders', 'sales', 'reportDetailByPeriod', 'excise-goods',];
 
         if (!in_array($method, $allowed_methods)) {
+            echo $method . ' не разрешен';
             return null;
         }
 
-        $url = $this->url . $method;
+        $url = self::$url . $method;
 
         switch ($method) {
             case 'sales':
@@ -195,38 +256,20 @@ class WildberriesHelper
                 $queryParams = $this->defaultQueryParams;
         }
 
-        return $this->curlGet($url, $queryParams);
-    }
-
-    /**
-     * GET-запрос с параметрами
-     *
-     * @param string $url URL-адрес
-     * @return array Ответ в виде ассоциативного массива
-     */
-    public function curlGet(string $url, array $queryParams): ?array
-    {
         $url = $url . '?' . http_build_query($queryParams);
 
-        // инициализация сессии cURL
-        $ch = curl_init($url);
-        // конфигурирование настроек текущей сессии cURL
-        curl_setopt(
-            $ch,
-            CURLOPT_RETURNTRANSFER,
-            true
-        );
+        do {
+            echo 'GET-запрос на получение ' . $method . PHP_EOL;
+            $delay = 10_000;
+            $response = Http::withOptions([
+                'delay' => $delay,
+            ])->get($url);
 
-        // получение результата через запрос
-        $response = curl_exec($ch);
+            if ($response->successful()) break;
+            if ($response->failed()) echo 'Повтор GET-запроса на получение ' . $method . ' через ' . $delay / 1000 . ' секунд' . PHP_EOL;
+        } while (true);
 
-        // закрытие сессии
-        curl_close($ch);
-
-        return json_decode(
-            $response,
-            true
-        );
+        return $response->json();
     }
 
     /**
@@ -235,8 +278,10 @@ class WildberriesHelper
      * @param string $name Название таблицы в БД
      * @param array|null $data Передаваемые в таблицу данные
      * @return bool Статус передачи данных (данные успешно переданы или же нет)
+     *
+     * В случаях неуспеха просто выбрасывает сообщение об ошибке
      */
-    public function upsertToWildberriesBD(string $name, ?array $data): bool
+    public function upsert(string $name, ?array $data): bool
     {
         $allowed_tables = ['incomes', 'stocks', 'orders', 'sales', 'reportDetailByPeriod', 'excise_goods',];
 
@@ -244,14 +289,11 @@ class WildberriesHelper
             return false;
         }
 
-        if (isset($data['errors'])) {
-            echo 'Ошибка в запросе или на стороне сервера';
-            return false;
-        }
-
         if (!empty($data)) {
-            // выгрузка списка поставок в БД
+            // выгрузка в БД
+            echo 'Выгрузка ' . $name . ' в БД' . PHP_EOL;
             try {
+
                 switch ($name) {
                     case 'incomes':
                         Incomes::upsert(
@@ -299,12 +341,9 @@ class WildberriesHelper
                 echo 'Данные ' . $name . ' успешно выгружены в БД' . PHP_EOL;
 
             } catch (\Exception $ex) {
-                echo 'Проблема выгрузки ' . $name . ' в БД';
-                echo $ex->getMessage();
+                echo 'Проблема выгрузки' . $name . ' в БД' . PHP_EOL;
             }
         } else echo 'Список ' . $name . ' пуст!' . PHP_EOL;
-
-        sleep(3);
 
         return true;
     }

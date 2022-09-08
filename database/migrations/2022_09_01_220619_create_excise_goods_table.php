@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('excise_goods', function (Blueprint $table) {
-            $table->integer('id')->unique();
+            $table->integer('id')->unique()->index();
             $table->char('inn');
             $table->integer('finishedPrice');
             $table->integer('operationTypeId');

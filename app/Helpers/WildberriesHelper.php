@@ -209,7 +209,6 @@ class WildberriesHelper
      */
     private static function checkProp(string $name, $prop, string $pattern): bool
     {
-
         if (!preg_match(
             $pattern,
             $prop
@@ -281,7 +280,7 @@ class WildberriesHelper
      *
      * В случаях неуспеха просто выбрасывает сообщение об ошибке
      */
-    public function upsert(string $name, ?array $data): bool
+    public function upload(string $name, ?array $data): bool
     {
         $allowed_tables = ['incomes', 'stocks', 'orders', 'sales', 'reportDetailByPeriod', 'excise_goods',];
 
@@ -293,55 +292,214 @@ class WildberriesHelper
             // выгрузка в БД
             echo 'Выгрузка ' . $name . ' в БД' . PHP_EOL;
             try {
-
                 switch ($name) {
                     case 'incomes':
-                        Incomes::upsert(
-                            $data,
-                            ['incomeid',],
-                            ['number', 'date', 'lastChangeDate', 'supplierArticle', 'techSize', 'barcode', 'quantity', 'totalPrice', 'dateClose', 'warehouseName', 'nmId', 'status',]
-                        );
+                        foreach ($data as $row) {
+                            Incomes::firstOrCreate(
+                                [
+                                    'incomeid' => $row['incomeid'],
+                                ],
+                                [
+                                    'number' => $row['number'],
+                                    'date' => $row['date'],
+                                    'lastChangeDate' => $row['lastChangeDate'],
+                                    'supplierArticle' => $row['supplierArticle'],
+                                    'techSize' => $row['techSize'],
+                                    'barcode' => $row['barcode'],
+                                    'quantity' => $row['quantity'],
+                                    'totalPrice' => $row['totalPrice'],
+                                    'dateClose' => $row['dateClose'],
+                                    'warehouseName' => $row['warehouseName'],
+                                    'nmId' => $row['nmId'],
+                                    'status' => $row['status'],
+                                ]
+                            );
+                        }
                         break;
                     case 'stocks':
-                        Stocks::upsert(
-                            $data,
-                            ['nmId',],
-                            ['lastChangeDate', 'supplierArticle', 'techSize', 'barcode', 'quantity', 'isSupply', 'isRealization', 'quantityFull', 'quantityNotInOrders', 'warehouseName', 'inWayToClient', 'inWayFromClient', 'subject', 'category', 'daysOnSite', 'brand', 'SCCode', 'warehouse', 'Price', 'Discount',]
-                        );
+                        foreach ($data as $row) {
+                            Stocks::firstOrCreate(
+                                [
+                                    'barcode' => $row['barcode'],
+                                    'warehouse' => $row['warehouse'],
+                                    'nmId' => $row['nmId'],
+                                ],
+                                [
+                                    'lastChangeDate' => $row['lastChangeDate'],
+                                    'supplierArticle' => $row['supplierArticle'],
+                                    'techSize' => $row['techSize'],
+                                    'quantity' => $row['quantity'],
+                                    'isSupply' => $row['isSupply'],
+                                    'isRealization' => $row['isRealization'],
+                                    'quantityFull' => $row['quantityFull'],
+                                    'quantityNotInOrders' => $row['quantityNotInOrders'],
+                                    'warehouseName' => $row['warehouseName'],
+                                    'inWayToClient' => $row['inWayToClient'],
+                                    'inWayFromClient' => $row['inWayFromClient'],
+                                    'subject' => $row['subject'],
+                                    'category' => $row['category'],
+                                    'daysOnSite' => $row['daysOnSite'],
+                                    'brand' => $row['brand'],
+                                    'SCCode' => $row['SCCode'],
+                                    'Price' => $row['Price'],
+                                    'Discount' => $row['Discount'],
+                                ]
+                            );
+                        }
                         break;
                     case 'orders':
-                        Orders::upsert(
-                            $data,
-                            ['odid',],
-                            ['gNumber', 'date', 'lastChangeDate', 'supplierArticle', 'techSize', 'barcode', 'totalPrice', 'discountPercent', 'warehouseName', 'oblast', 'incomeID', 'nmId', 'subject', 'category', 'brand', 'isCancel', 'sticker',]
-                        );
+                        foreach ($data as $row) {
+                            Orders::firstOrCreate(
+                                [
+                                    'gNumber' => $row['gNumber'],
+                                    'odid' => $row['odid'],
+                                ],
+                                [
+                                    'date' => $row['date'],
+                                    'lastChangeDate' => $row['lastChangeDate'],
+                                    'supplierArticle' => $row['supplierArticle'],
+                                    'techSize' => $row['techSize'],
+                                    'barcode' => $row['barcode'],
+                                    'totalPrice' => $row['totalPrice'],
+                                    'discountPercent' => $row['discountPercent'],
+                                    'warehouseName' => $row['warehouseName'],
+                                    'oblast' => $row['oblast'],
+                                    'incomeID' => $row['incomeID'],
+                                    'nmId' => $row['nmId'],
+                                    'subject' => $row['subject'],
+                                    'category' => $row['category'],
+                                    'brand' => $row['brand'],
+                                    'isCancel' => $row['isCancel'],
+                                    'sticker' => $row['sticker'],
+                                ]
+                            );
+                        }
                         break;
                     case 'sales':
-                        Sales::upsert(
-                            $data,
-                            ['odid',],
-                            ['gNumber', 'date', 'lastChangeDate', 'supplierArticle', 'techSize', 'barcode', 'totalPrice', 'discountPercent', 'isSupply', 'isRealization', 'promoCodeDiscount', 'warehouseName', 'countryName', 'oblastOkrugName', 'regionName', 'incomeID', 'saleID', 'odid', 'spp', 'forPay', 'finishedPrice', 'priceWithDisc', 'nmId', 'subject', 'category', 'brand', 'sticker',]
-                        );
+                        foreach ($data as $row) {
+                            Sales::firstOrCreate(
+                                [
+                                    'gNumber' => $row['gNumber'],
+                                    'odid' => $row['odid'],
+                                ],
+                                [
+                                    'date' => $row['date'],
+                                    'lastChangeDate' => $row['lastChangeDate'],
+                                    'supplierArticle' => $row['supplierArticle'],
+                                    'techSize' => $row['techSize'],
+                                    'barcode' => $row['barcode'],
+                                    'totalPrice' => $row['totalPrice'],
+                                    'discountPercent' => $row['discountPercent'],
+                                    'isSupply' => $row['isSupply'],
+                                    'isRealization' => $row['isRealization'],
+                                    'promoCodeDiscount' => $row['promoCodeDiscount'],
+                                    'warehouseName' => $row['warehouseName'],
+                                    'countryName' => $row['countryName'],
+                                    'oblastOkrugName' => $row['oblastOkrugName'],
+                                    'regionName' => $row['regionName'],
+                                    'incomeID' => $row['incomeID'],
+                                    'saleID' => $row['saleID'],
+                                    'odid' => $row['odid'],
+                                    'spp' => $row['spp'],
+                                    'forPay' => $row['forPay'],
+                                    'finishedPrice' => $row['finishedPrice'],
+                                    'priceWithDisc' => $row['priceWithDisc'],
+                                    'nmId' => $row['nmId'],
+                                    'subject' => $row['subject'],
+                                    'category' => $row['category'],
+                                    'brand' => $row['brand'],
+                                    'sticker' => $row['sticker'],
+                                ]
+                            );
+                        }
                         break;
                     case 'reportDetailByPeriod':
-                        Reports::upsert(
-                            $data,
-                            ['rrd_id',],
-                            ['realizationreport_id', 'suppliercontract_code', 'rid', 'rr_dt', 'gi_id', 'subject_name', 'nm_id', 'brand_name', 'sa_name', 'ts_name', 'barcode', 'doc_type_name', 'quantity', 'retail_price', 'retail_amount', 'sale_percent', 'commission_percent', 'office_name', 'supplier_oper_name', 'order_dt', 'sale_dt', 'shk_id', 'retail_price_withdisc_rub', 'delivery_amount', 'return_amount', 'delivery_rub', 'gi_box_type_name', 'product_discount_for_report', 'supplier_promo', 'ppvz_spp_prc', 'ppvz_kvw_prc_base', 'ppvz_kvw_prc', 'ppvz_sales_commission', 'ppvz_for_pay', 'ppvz_reward', 'ppvz_vw', 'ppvz_vw_nds', 'ppvz_office_id', 'ppvz_office_name', 'ppvz_supplier_id', 'ppvz_supplier_name', 'ppvz_inn', 'declaration_number', 'sticker_id', 'site_country',]
-                        );
+                        // коррекция списка продаж по реализации (добавление поля 'ppvz_office_name' там где его нет)
+                        for ($i = 0; $i < count($data); $i++) {
+                            if (count($data[$i]) === 50) {
+                                $data[$i]['ppvz_office_name'] = null;
+                            }
+                        }
+                        foreach ($data as $row) {
+                            Reports::firstOrCreate(
+                                [
+                                    'realizationreport_id' => $row['realizationreport_id'],
+                                ],
+                                [
+                                    'suppliercontract_code' => $row['suppliercontract_code'],
+                                    'rid' => $row['rid'],
+                                    'rr_dt' => $row['rr_dt'],
+                                    'rrd_id' => $row['rrd_id'],
+                                    'gi_id' => $row['gi_id'],
+                                    'subject_name' => $row['subject_name'],
+                                    'nm_id' => $row['nm_id'],
+                                    'brand_name' => $row['brand_name'],
+                                    'sa_name' => $row['sa_name'],
+                                    'ts_name' => $row['ts_name'],
+                                    'barcode' => $row['barcode'],
+                                    'doc_type_name' => $row['doc_type_name'],
+                                    'quantity' => $row['quantity'],
+                                    'retail_price' => $row['retail_price'],
+                                    'retail_amount' => $row['retail_amount'],
+                                    'sale_percent' => $row['sale_percent'],
+                                    'commission_percent' => $row['commission_percent'],
+                                    'office_name' => $row['office_name'],
+                                    'supplier_oper_name' => $row['supplier_oper_name'],
+                                    'order_dt' => $row['order_dt'],
+                                    'sale_dt' => $row['sale_dt'],
+                                    'shk_id' => $row['shk_id'],
+                                    'retail_price_withdisc_rub' => $row['retail_price_withdisc_rub'],
+                                    'delivery_amount' => $row['delivery_amount'],
+                                    'return_amount' => $row['return_amount'],
+                                    'delivery_rub' => $row['delivery_rub'],
+                                    'gi_box_type_name' => $row['gi_box_type_name'],
+                                    'product_discount_for_report' => $row['product_discount_for_report'],
+                                    'supplier_promo' => $row['supplier_promo'],
+                                    'ppvz_spp_prc' => $row['ppvz_spp_prc'],
+                                    'ppvz_kvw_prc_base' => $row['ppvz_kvw_prc_base'],
+                                    'ppvz_kvw_prc' => $row['ppvz_kvw_prc'],
+                                    'ppvz_sales_commission' => $row['ppvz_sales_commission'],
+                                    'ppvz_for_pay' => $row['ppvz_for_pay'],
+                                    'ppvz_reward' => $row['ppvz_reward'],
+                                    'ppvz_vw' => $row['ppvz_vw'],
+                                    'ppvz_vw_nds' => $row['ppvz_vw_nds'],
+                                    'ppvz_office_id' => $row['ppvz_office_id'],
+                                    'ppvz_office_name' => $row['ppvz_office_name'],
+                                    'ppvz_supplier_id' => $row['ppvz_supplier_id'],
+                                    'ppvz_supplier_name' => $row['ppvz_supplier_name'],
+                                    'ppvz_inn' => $row['ppvz_inn'],
+                                    'declaration_number' => $row['declaration_number'],
+                                    'sticker_id' => $row['sticker_id'],
+                                    'site_country' => $row['site_country'],
+                                ]
+                            );
+                        }
                         break;
                     case 'excise_goods':
-                        ExciseGoods::upsert(
-                            $data,
-                            ['id',],
-                            ['inn', 'finishedPrice', 'operationTypeId', 'fiscalDt', 'docNumber', 'fnNumber', 'regNumber', 'excise', 'date',]
-                        );
+                        foreach ($data as $row) {
+                            ExciseGoods::firstOrCreate(
+                                [
+                                    'id' => $row['id'],
+                                ],
+                                [
+                                    'inn' => $row['inn'],
+                                    'finishedPrice'=>$row['finishedPrice'],
+                                    'operationTypeId'=>$row['operationTypeId'],
+                                    'fiscalDt' => $row['fiscalDt'],
+                                    'docNumber' => $row['docNumber'],
+                                    'fnNumber' => $row['fnNumber'],
+                                    'regNumber' => $row['regNumber'],
+                                    'excise' => $row['excise'],
+                                    'date' => $row['date'],
+                                ]
+                            );
+                        }
                         break;
                 }
                 echo 'Данные ' . $name . ' успешно выгружены в БД' . PHP_EOL;
 
             } catch (\Exception $ex) {
-                echo 'Проблема выгрузки' . $name . ' в БД' . PHP_EOL;
+                echo 'Проблема выгрузки ' . $name . ' в БД' . PHP_EOL;
             }
         } else echo 'Список ' . $name . ' пуст!' . PHP_EOL;
 

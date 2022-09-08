@@ -18,7 +18,7 @@ return new class extends Migration
             $table->dateTime('lastChangeDate'); // дата и время обновления информации в сервисе
             $table->char('supplierArticle', 75); // артикул поставщика
             $table->char('techSize', 30); // размер
-            $table->char('barcode', 30); // штрих-код
+            $table->char('barcode', 30)->index(); // штрих-код
             $table->integer('quantity'); // кол-во доступное для продажи
             $table->integer('isSupply'); // договор поставки
             $table->integer('isRealization'); // договор реализации
@@ -27,13 +27,13 @@ return new class extends Migration
             $table->char('warehouseName', 50); // название склада
             $table->integer('inWayToClient'); // в пути к клиенту (штук)
             $table->integer('inWayFromClient'); // в пути от клиента (штук)
-            $table->integer('nmId')->unique(); // код WB
+            $table->integer('nmId')->index(); // код WB
             $table->char('subject', 50); // предмет
             $table->char('category', 50); // категория
             $table->integer('daysOnSite'); // кол-во дней на сайте
             $table->char('brand', 50); // бренд
             $table->char('SCCode', 50); // код контракта
-            $table->integer('warehouse'); // уникальный идентификатор склада
+            $table->integer('warehouse')->index(); // уникальный идентификатор склада
             $table->decimal('Price'); // цена товара
             $table->integer('Discount'); // скидка на товар установленная продавцом
             $table->timestamps();

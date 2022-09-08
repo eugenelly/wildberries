@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Jobs;
+use Illuminate\Console\Command;
 
 use App\Helpers\WildberriesHelper;
 
@@ -14,14 +14,14 @@ class UpsertToWildberries extends Command
      *
      * @var string
      */
-    protected $signature = 'wildberries:upsert {key} {dateFrom} {--dateTo=} {--flag=} {--limit=} {--rrdid=}';
+    protected $signature = 'wildberries:upload {key} {dateFrom} {--dateTo=} {--flag=} {--limit=} {--rrdid=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Получение данных через RESTful и выгрузка в БД (WildberriesDB)';
+    protected $description = 'Получение данных через RESTful и выгрузка в БД (wildberries_db)';
 
     /**
      * Execute the console command.
@@ -47,11 +47,11 @@ class UpsertToWildberries extends Command
         );
 
         // получение данных по GET-запросам и выгрузка их в БД
-        Jobs\upsert::dispatch($wildberries, 'incomes');
-        Jobs\upsert::dispatch($wildberries, 'stocks');
-        Jobs\upsert::dispatch($wildberries, 'orders');
-        Jobs\upsert::dispatch($wildberries, 'sales');
-        Jobs\upsert::dispatch($wildberries, 'reportDetailByPeriod');
-        Jobs\upsert::dispatch($wildberries, 'excise-goods');
+        Jobs\upload::dispatch($wildberries, 'incomes');
+        Jobs\upload::dispatch($wildberries, 'stocks');
+        Jobs\upload::dispatch($wildberries, 'orders');
+        Jobs\upload::dispatch($wildberries, 'sales');
+        Jobs\upload::dispatch($wildberries, 'reportDetailByPeriod');
+        Jobs\upload::dispatch($wildberries, 'excise-goods');
     }
 }

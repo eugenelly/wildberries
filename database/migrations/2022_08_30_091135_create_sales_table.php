@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->char('gNumber', 50); // номер заказа
-            $table->date('date'); // дата продажи
+            $table->char('gNumber', 50)->index(); // номер заказа
+            $table->dateTime('date'); // дата продажи
             $table->dateTime('lastChangeDate'); // дата время обновления информации в сервисе
             $table->char('supplierArticle', 75); // ваш артикул
             $table->char('techSize', 30); // размер
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->char('regionName', 200); // регион
             $table->integer('incomeID'); // номер поставки
             $table->char('saleID', 15); // уникальный идентификатор продажи/возврата (SXXXXXXXXXX — продажа, RXXXXXXXXXX — возврат, DXXXXXXXXXXX — доплата, 'AXXXXXXXXX' – сторно продаж (все значения полей как у продажи, но поля с суммами и кол-вом с минусом как в возврате). SaleID='BXXXXXXXXX' - сторно возврата(все значения полей как у возврата, но поля с суммами и кол-вом с плюсом, в противоположность возврату))
-            $table->bigInteger('odid')->unique(); // уникальный идентификатор позиции заказа
+            $table->bigInteger('odid')->index(); // уникальный идентификатор позиции заказа
             $table->double('spp'); // согласованная скидка постоянного покупателя (СПП)
             $table->decimal('forPay'); // к перечислению поставщику
             $table->decimal('finishedPrice'); // фактическая цена из заказа (с учетом всех скидок, включая и от ВБ)
@@ -42,8 +42,6 @@ return new class extends Migration
             $table->char('category', 50); // категория
             $table->char('brand', 50); // бренд
             $table->char('sticker'); // аналогично стикеру, который клеится на товар в процессе сборки
-            $table->integer('IsStorno');
-            $table->char('srid');
             $table->timestamps();
         });
     }

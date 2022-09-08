@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('incomes', function (Blueprint $table) {
             $table->id();
-            $table->integer('incomeid')->unique(); // номер поставки
+            $table->integer('incomeid')->unique()->index(); // номер поставки
             $table->char('number', 40); // номер УПД
             $table->date('date'); // дата поступления
             $table->dateTime('lastChangeDate'); // дата и время обновления информации в сервисе

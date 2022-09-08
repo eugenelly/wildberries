@@ -15,11 +15,11 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->integer('realizationreport_id'); // Номер отчета
+            $table->integer('realizationreport_id')->unique()->index(); // Номер отчета
             $table->char('suppliercontract_code')->nullable(); // Договор
             $table->bigInteger('rid'); // Уникальный идентификатор позиции заказа
             $table->dateTime('rr_dt'); // Дата операции
-            $table->biginteger('rrd_id')->unique(); // Номер строки
+            $table->biginteger('rrd_id'); // Номер строки
             $table->integer('gi_id'); // Номер поставки
             $table->char('subject_name')->nullable(); // Предмет
             $table->integer('nm_id')->nullable(); // Артикул
@@ -61,11 +61,6 @@ return new class extends Migration
             $table->char('declaration_number'); // Номер таможенной декларации
             $table->char('sticker_id'); // Аналогично стикеру, который клеится на товар в процессе сборки
             $table->char('site_country'); // Страна продажи
-            $table->dateTime('date_from');
-            $table->dateTime('date_to');
-            $table->integer('penalty');
-            $table->integer('additional_payment');
-            $table->char('srid');
             $table->timestamps();
         });
     }
